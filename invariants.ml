@@ -116,7 +116,8 @@ let p1 = {nvars = 2;
 
 let () = Printf.printf "%s" (smtlib_of_wa p1)
 
-(* Question 5. Vérifiez que votre implémentation donne un fichier
+(* 
+  Question 5. Vérifiez que votre implémentation donne un fichier
    SMTLIB qui est équivalent au fichier que vous avez écrit à la main
    dans l'exercice 1. Ajoutez dans la variable p2 ci-dessous au moins
    un autre programme test, et vérifiez qu'il donne un fichier SMTLIB

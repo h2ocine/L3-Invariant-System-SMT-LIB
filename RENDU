@@ -1,16 +1,11 @@
            Mini-projet 2 : Synthèse d'invariant en SMT-LIB
                             fichier RENDU
-                     (à remplir obligatoirement)
-
-**Un mini-projet sans fichier RENDU rempli ne recevra pas de note.**
-
-Date limite: 19 décembre 2022
 
 Identité
 --------
-Nombre de binôme: **à remplir**
-Nom, prénom 1: **à remplir**
-Nom, prénom 2: **à remplir**
+Nombre de binôme: 47
+Nom, prénom 1: Kadem, Hocine
+Nom, prénom 2: Dorbane Sara
 
 
 Questions sur votre code
@@ -18,45 +13,86 @@ Questions sur votre code
 
 ** Exercice 2 **
 
-0. Avez-vous testé que `make invariants` s'exécute sans erreurs ou
-   warnings, puis que `./invariants` produit une sortie au format
-   SMT-LIB, et enfin que cette sortie est acceptée par Z3 ?
+0. 
+`make invariants` s'exécute sans erreurs ou warnings : 
+->
 
-**à remplir** 
+`./invariants` produit une sortie au format SMT-LIB : 
+-> ; synthèse d'invariant de programme
+   ; on déclare le symbole non interprété de relation Invar
+   (declare-fun Invar (Int Int ) Bool)
+   ; la relation Invar est un invariant de boucle
+   TODO
+   ; la relation Invar est vraie initialement
+   (assert (Inv 0 0))
+   ; l'assertion finale est vérifiée
+   TODO
+   ; appel au solveur
+   (check-sat-using (then qe smt))
+   (get-model)
+   (exit)
 
----
 
-1. Le type `term` est un type récursif : quel type de fonction est-il
-   naturel d'utiliser ? Quels sont vos cas de base et quelle quantité
-   strictement décroissante au cours des appels successifs vous assure
-   la terminaison ?
-   
-
-**à remplir**
-
----
-
-2. Pour l'implémentation de `str_condition`, quelles sont les
-   fonctions auxiliaires que vous avez utilisées et/ou écrites ? (Par
-   une fonction auxiliaire, on entend ici soit une fonction d'une
-   bibliothèque, par exemple des fonctions comme `List.length` ou
-   `List.rev_append`, ou une fonction `aux_str_condition` que vous
-   avez écrite vous-mêmes.) Expliquez en quelques phrases en français
-   comment ces fonctions auxiliaires sont utilisées dans votre
-   implémentation de la fonction `str_condition`.
-   
-**à remplir**
+sortie est acceptée par Z3 : 
+->
 
 ---
 
-3. Pour l'implémentation de `str_assert_forall`, quelles sont les
-   fonctions auxiliaires que vous avez utilisées et/ou écrites ?
-   Expliquez en quelques phrases en français comment ces fonctions
-   auxiliaires sont utilisées dans votre implémentation de la fonction
-   `str_assert_forall`.
+1. Le type `term` est un type récursif : 
+
+   quel type de fonction est-il naturel d'utiliser ?
+   ->
+
+   Quels sont vos cas de base ?
+   ->
+
+   Quelle quantité strictement décroissante au cours des appels successifs vous assure la terminaison ?
+   ->
+
+---
+
+2. Pour l'implémentation de `str_condition` : 
+
+   Les fonctions auxiliaires nous avez utilisées et/ou écrites :
    
-**à remplir**   
+   * val str_of_term_with_space : term -> string -> string 
+      revoie une chaine de caractère qui concatène le caractère " " (espace) avec str_of_term de term, le tout concatèné avec la chaine de caractère reste
+
+      exemple : 
+      str_of_term_with_space Var(2) " suite de la formule" renvoie : " x2 suite de la formule"
+
+   * List.fold_right : ('a -> 'b -> 'b) -> 'a list -> 'b -> 'b
+      fold_right f [a1; ...; an] init = f a1 (f a2 (... (f an init) ...))
+
+   utilisation :
+   on l'appelle avec les arguments suivants : List.fold_right str_of_term_with_space l ""
+   ceci permet de générer une chaine de caractère des termes que contient la liste l, tous séparés avec un espace (le caractère " ")
+
+---
+
+3. Pour l'implémentation de `str_assert_forall` : 
+
+   Les fonctions auxiliaires nous avez utilisées et/ou écrites :
    
+   * tr_assert_forall_aux : int -> int -> string
+      tr_assert_forall_aux n k renvoie : "(xk Int) (xk+1 Int) .... (xn Int)"
+
+      la fonction tr_assert_forall_aux est une fonction récursive où chaque iteration renvoie la chaine de caractère ("term_string Int ") où term_string represente la chaine de caractère de term
+
+      elle prend en paramètre deux int et renvoie un string 
+      le premier int represente le nombre de terme total
+      le deuxième int represente a partir de quel terme on va remplir le string de retour
+
+      remarque : 
+      lors de l'envoie du dernier term (les deux paramètre en entrés sont egaux) on ajoute pas le caractère " " (espace)
+
+      exemple : 
+      tr_assert_forall_aux 5 3 renvoie : "(x3 Int) (x4 Int) (x5 Int)"
+
+      utilisation :
+      on l'appelle de cette façon : str_assert_forall_aux n 1 pour renvoyer un string qui contient du terme x1 jusqu'a xn
+
+
 ---
 
 4. Le langage de programmation WA suppose que les mises à jour des
