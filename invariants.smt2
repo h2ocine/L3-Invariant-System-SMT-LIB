@@ -1,0 +1,7 @@
+(declare-fun Invar( Int Int ) Bool )
+(assert (Invar 0 0))
+(assert(forall ((x1 Int) (x2 Int)) (=>(and (Invar x1 x2) (< x1 3)) (Invar (+ x2 3) (+ x1 1)))))
+(assert(forall ((x1 Int) (x2 Int)) (=>(and (Invar x1 x2) (>= x1 3)) (= x2 9))))
+(check-sat-using (then qe smt))
+(get-model)
+(exit)
