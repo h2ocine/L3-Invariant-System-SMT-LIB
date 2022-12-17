@@ -2,14 +2,14 @@ open Printf
 
 (* Définitions de terme, test et programme *)
 type term = 
- | Const of int
- | Var of int
- | Add of term * term
- | Mult of term * term
+  | Const of int
+  | Var of int
+  | Add of term * term
+  | Mult of term * term
 
 type test = 
- | Equals of term * term
- | LessThan of term * term
+  | Equals of term * term
+  | LessThan of term * term
 
 let tt = Equals (Const 0, Const 0)
 let ff = LessThan (Const 0, Const 0)
@@ -22,47 +22,65 @@ type program = {nvars : int;
 
 let x n = "x" ^ string_of_int n
 
-(* Question 1. Écrire des fonctions `str_of_term : term -> string` 
-   et `str_of_test : test -> string` qui convertissent des termes 
-   et des tests en chaînes de caractères du format SMTLIB.
+            
+(*------------------------------------------------------------------*)
+let rec str_of_term t =  
+  match t with 
+  |Var a -> "x" ^ string_of_int a ^ ""
+  |Const a -> string_of_int a
+  |Add(a1,a2) -> "(+" ^ " " ^ str_of_term a1 ^ " " ^ str_of_term a2 ^ ")"
+  |Mult(a1,a2) -> "(*" ^ " " ^ str_of_term a1 ^ " " ^ str_of_term a2 ^ ")"
+;;
 
-  Par exemple, str_of_term (Var 3) retourne "x3", str_of_term (Add
-   (Var 1, Const 3)) retourne "(+ x1 3)" et str_of_test (Equals (Var
-   2, Const 2)) retourne "(= x2 2)".  *)
-let rec str_of_term t =  match t with 
-| Var a -> "(x" ^ string_of_int a ^ ")"
-| Const a -> string_of_int 
-| And (a1,a1) -> "(+" ^ " " ^ string_of_int a1 ^ " " ^ string_of_int a2 ^ ")"
-| Mult (a1,a1) -> "(*" ^ " " ^ string_of_int a1 ^ " " ^ string_of_int a2 ^ ")"
-
-
-
-
-let str_of_test t = "TODO" (* À compléter *)
+let str_of_test t = (* À compléter *)
+  match t with 
+  |Equals(term1, term2) -> "(= " ^ (str_of_term term1) ^ " " ^ (str_of_term term2) ^ ")"
+  |LessThan(term1, term2) -> "(< " ^ (str_of_term term1) ^ " " ^ (str_of_term term2) ^ ")"
+;;
 
 let string_repeat s n =
-  Array.fold_left (^) "" (Array.make n s)
+  Array.fold_left (^) "" (Array.make n s) 
+;;
 
-(* Question 2. Écrire une fonction `str_condition : term list -> string`
-   qui prend une liste de termes t1, ..., tk et retourne une chaîne 
-   de caractères qui exprime que le tuple (t1, ..., tk) est dans 
-   l'invariant.  Par exemple, str_condition [Var 1; Const 10] retourne 
-   "(Inv x1 10)".
-   *)
-let str_condition l = "TODO" (* À compléter *)
 
-(* Question 3. Écrire une fonction 
-   `str_assert_for_all : int -> string -> string` qui prend en
-   argument un entier n et une chaîne de caractères s, et retourne
-   l'expression SMTLIB qui correspond à la formule "forall x1 ... xk
-   (s)".
+(*------------------------------------------------------------------*) 
+let str_condition l = 
+  let rec str_condition_aux l = 
+    match l with 
+    |[] -> ")"
+    |term :: l' -> " " ^ str_of_term term ^ str_condition_aux l'
+  in
+  "(Inv" ^ str_condition_aux l 
+;; 
 
-  Par exemple, str_assert_forall 2 "< x1 x2" retourne : "(assert
-   (forall ((x1 Int) (x2 Int)) (< x1 x2)))".  *)
+(*-----------------------------------------------------------------------------*) 
 
 let str_assert s = "(assert " ^ s ^ ")"
 
-let str_assert_forall n s = "TODO" (* À compléter *)
+let str_assert_forall n s = 
+  let rec str_assert_forall_aux n = 
+    if n = 0
+    then ""
+    else
+      "(" ^ (str_of_term (Var(1))) ^ " Int)" ^ (str_assert_forall_aux (n-1))
+  in str_assert ("(forall (" ^ str_assert_forall_aux n ^ ") (" ^ s ^ "))")
+;;
+
+(*-----------------------------------------------------------------------------*) 
+(*tests question 1 à 3 :
+  str_of_term (Var 3);; (*retourne "x3" ;;*)
+
+  str_of_term (Add (Var 1, Const 3));; (*retourne "(+ x1 3)";;*)
+
+  str_of_test (Equals (Var 2, Const 2));; (*retourne "(= x2 2)";;*)
+
+  str_condition [Var 1; Const 10];; (*retourne "(Inv x1 10)";;*)
+  
+  str_assert_forall 2 "< x1 x2" ;; (*retourne : "(assert (forall ((x1 Int) (x2 Int)) (< x1 x2)))";;*)
+*)
+(*-----------------------------------------------------------------------------*) 
+
+
 
 (* Question 4. Nous donnons ci-dessous une définition possible de la
    fonction smt_lib_of_wa. Complétez-la en écrivant les définitions de
