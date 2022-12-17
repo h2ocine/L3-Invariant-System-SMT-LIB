@@ -74,7 +74,15 @@ let rec list_var n l=
   if n = 0 then l
   else if n > 0 then list_var (n-1) (List.cons (Var n) l)
   else failwith "n negatif"
-;;             
+;;
+
+
+(*str_of_inverse_test : test -> string*)
+let str_of_inverse_test s = 
+  match s with
+  |Equals(term1, term2) -> "(!= " ^ (str_of_term term1) ^ " " ^ (str_of_term term2) ^ ")"
+  |LessThan(term1, term2) -> "(>= " ^ (str_of_term term1) ^ " " ^ (str_of_term term2) ^ ")"
+;;
 
 (*smtlib_of_wa : program -> string*)
 let smtlib_of_wa p = 
@@ -85,20 +93,20 @@ let smtlib_of_wa p =
   let loop_condition p =
     "; la relation Invar est un invariant de boucle\n"
 
-    ^ str_assert_forall p.nvars ( "(=> (and " ^ 
+    ^ str_assert_forall p.nvars ( "=> (and " ^ 
     str_condition (list_var p.nvars [])
     ^ " " ^
-    str_of_test p.loopcond ^ ") " ^ str_condition p.mods ^ ")" )in
+    str_of_test p.loopcond ^ ") " ^ str_condition p.mods )in
 
   let initial_condition p =
     "; la relation Invar est vraie initialement\n"
     ^str_assert (str_condition p.inits) in
   let assertion_condition p =
     "; l'assertion finale est vérifiée\n"
-    ^ str_assert_forall p.nvars ("(=> (and " ^ 
-    str_condition (list_var p.nvars l)
+    ^ str_assert_forall p.nvars ("=> (and " ^ 
+    str_condition (list_var p.nvars [])
     ^ " " ^
-    str_of_test p.loopcond ^ ") " ^ str_of_test p.assertion ^ ")" )  in
+    str_of_inverse_test p.loopcond ^ ") " ^ str_of_test p.assertion )  in
   let call_solver =
     "; appel au solveur\n(check-sat-using (then qe smt))\n(get-model)\n(exit)\n" in
   String.concat "\n" [declare_invariant p.nvars;
@@ -122,4 +130,6 @@ let () = Printf.printf "%s" (smtlib_of_wa p1)
    un autre programme test, et vérifiez qu'il donne un fichier SMTLIB
    de la forme attendue. *)
 
-let p2 = None (* À compléter *) 
+(* let p2 = {
+
+} *)
