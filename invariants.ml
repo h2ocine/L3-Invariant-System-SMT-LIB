@@ -23,82 +23,60 @@ type program = {nvars : int;
 let x n = "x" ^ string_of_int n
 
             
-(*------------------------------------------------------------------*)
+(* Question 1 ----------------------------------------------------------------------------*)
+(*str_of_term : term -> string*)
 let rec str_of_term t =  
   match t with 
   |Var a -> "x" ^ string_of_int a ^ ""
   |Const a -> string_of_int a
   |Add(a1,a2) -> "(+" ^ " " ^ str_of_term a1 ^ " " ^ str_of_term a2 ^ ")"
   |Mult(a1,a2) -> "(*" ^ " " ^ str_of_term a1 ^ " " ^ str_of_term a2 ^ ")"
-;;
 
-let str_of_test t = (* À compléter *)
+(*str_of_term : term -> string*)
+let str_of_test t = 
   match t with 
   |Equals(term1, term2) -> "(= " ^ (str_of_term term1) ^ " " ^ (str_of_term term2) ^ ")"
   |LessThan(term1, term2) -> "(< " ^ (str_of_term term1) ^ " " ^ (str_of_term term2) ^ ")"
-;;
 
+(*string_repeat : string -> int -> string*)
 let string_repeat s n =
   Array.fold_left (^) "" (Array.make n s) 
-;;
 
 
-(*------------------------------------------------------------------*) 
+(* Question 2 ----------------------------------------------------------------------------*)
+(*str_condition : term list -> string*)
 let str_condition l = 
-  let rec str_condition_aux l = 
-    match l with 
-    |[] -> ")"
-    |term :: l' -> " " ^ str_of_term term ^ str_condition_aux l'
+  let rec str_of_term_with_space term reste= 
+    " " ^ str_of_term term ^ reste
   in
-  "(Inv" ^ str_condition_aux l 
-;; 
+  "(Inv" ^ (List.fold_right str_of_term_with_space l "") ^ ")"
 
-(*-----------------------------------------------------------------------------*) 
-
+  
+(* Question 3 ----------------------------------------------------------------------------*)
+(*str_condition : term list -> string*)
 let str_assert s = "(assert " ^ s ^ ")"
 
+(*str_assert_forall : int -> string -> string*)
 let str_assert_forall n s = 
-  let rec str_assert_forall_aux n = 
-    if n = 0
-    then ""
-    else
-      "(" ^ (str_of_term (Var(1))) ^ " Int)" ^ (str_assert_forall_aux (n-1))
-  in str_assert ("(forall (" ^ str_assert_forall_aux n ^ ") (" ^ s ^ "))")
-;;
+  let rec str_assert_forall_aux n_init n= 
+    if n > n_init
+    then "" 
+    else 
+      let espace = if n = n_init then "" else " " in
+      "(" ^ (str_of_term (Var(n))) ^ " Int)" ^ espace ^ (str_assert_forall_aux n_init (n+1))
 
-(*-----------------------------------------------------------------------------*)
+  in str_assert ("(forall (" ^ str_assert_forall_aux n 1 ^ ") (" ^ s ^ "))")
+
+
+(* Question 4 ----------------------------------------------------------------------------*)
+(*list_var : int -> term list -> term list*)
 let rec list_var n l=
-  match n with 
-  |e when e=0 -> List.rev
-  |e when e>0 -> list_var (n-1) (List.cons (Var n) l)
-;;
+  if n = 0 then l
+  else if n > 0 then list_var (n-1) (List.cons (Var n) l)
+  else failwith "n negatif"
+;;             
 
-(*-----------------------------------------------------------------------------*) 
-(*tests question 1 à 3 :
-  str_of_term (Var 3);; (*retourne "x3" ;;*)
-
-  str_of_term (Add (Var 1, Const 3));; (*retourne "(+ x1 3)";;*)
-
-  str_of_test (Equals (Var 2, Const 2));; (*retourne "(= x2 2)";;*)
-
-  str_condition [Var 1; Const 10];; (*retourne "(Inv x1 10)";;*)
-  
-  str_assert_forall 2 "< x1 x2" ;; (*retourne : "(assert (forall ((x1 Int) (x2 Int)) (< x1 x2)))";;*)
-
-*)
-(*-----------------------------------------------------------------------------*) 
-
-(*test de list_var*)
-(* let l = term [] in
-let k= list_var 2 l in 
-List.iter (fun a -> Printf.printf "%s " (str_of_term a)) k;; *)
-
-
-
-(* Question 4. Nous donnons ci-dessous une définition possible de la
-   fonction smt_lib_of_wa. Complétez-la en écrivant les définitions de
-   loop_condition et assertion_condition.
-
+(*smtlib_of_wa : program -> string*)
 let smtlib_of_wa p = 
   let declare_invariant n =
     "; synthèse d'invariant de programme\n"
@@ -108,7 +86,7 @@ let smtlib_of_wa p =
     "; la relation Invar est un invariant de boucle\n"
 
     ^ str_assert_forall p.nvars ( "(=> (and " ^ 
-    str_condition (list_var p.nvars l)
+    str_condition (list_var p.nvars [])
     ^ " " ^
     str_of_test p.loopcond ^ ") " ^ str_condition p.mods ^ ")" )in
 
@@ -144,4 +122,4 @@ let () = Printf.printf "%s" (smtlib_of_wa p1)
    un autre programme test, et vérifiez qu'il donne un fichier SMTLIB
    de la forme attendue. *)
 
-let p2 = None (* À compléter *) *)
+let p2 = None (* À compléter *) 
