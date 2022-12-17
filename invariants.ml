@@ -30,10 +30,11 @@ let x n = "x" ^ string_of_int n
    (Var 1, Const 3)) retourne "(+ x1 3)" et str_of_test (Equals (Var
    2, Const 2)) retourne "(= x2 2)".  *)
 let rec str_of_term t =  match t with 
-| Var a -> "x" ^ string_of_int a
+| Var a -> "(x" ^ string_of_int a ^ ")"
 | Const a -> string_of_int 
-| And (a1,a1) -> "+" ^ " " ^ string_of_int a1 ^ " " ^ string_of_int a2
-| Mult (a1,a1) -> "*" ^ " " ^ string_of_int a1 ^ " " ^ string_of_int a2
+| And (a1,a1) -> "(+" ^ " " ^ string_of_int a1 ^ " " ^ string_of_int a2 ^ ")"
+| Mult (a1,a1) -> "(*" ^ " " ^ string_of_int a1 ^ " " ^ string_of_int a2 ^ ")"
+
 
 
 
