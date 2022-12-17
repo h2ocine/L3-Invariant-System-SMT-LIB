@@ -66,6 +66,13 @@ let str_assert_forall n s =
   in str_assert ("(forall (" ^ str_assert_forall_aux n ^ ") (" ^ s ^ "))")
 ;;
 
+(*-----------------------------------------------------------------------------*)
+let rec list_var n l=
+  match n with 
+  |e when e=0 -> List.rev
+  |e when e>0 -> list_var (n-1) (List.cons (Var n) l)
+;;
+
 (*-----------------------------------------------------------------------------*) 
 (*tests question 1 à 3 :
   str_of_term (Var 3);; (*retourne "x3" ;;*)
@@ -77,14 +84,20 @@ let str_assert_forall n s =
   str_condition [Var 1; Const 10];; (*retourne "(Inv x1 10)";;*)
   
   str_assert_forall 2 "< x1 x2" ;; (*retourne : "(assert (forall ((x1 Int) (x2 Int)) (< x1 x2)))";;*)
+
 *)
 (*-----------------------------------------------------------------------------*) 
+
+(*test de list_var*)
+(* let l = term [] in
+let k= list_var 2 l in 
+List.iter (fun a -> Printf.printf "%s " (str_of_term a)) k;; *)
 
 
 
 (* Question 4. Nous donnons ci-dessous une définition possible de la
    fonction smt_lib_of_wa. Complétez-la en écrivant les définitions de
-   loop_condition et assertion_condition. *)
+   loop_condition et assertion_condition.
 
 let smtlib_of_wa p = 
   let declare_invariant n =
@@ -93,13 +106,21 @@ let smtlib_of_wa p =
     ^"(declare-fun Invar (" ^ string_repeat "Int " n ^  ") Bool)" in
   let loop_condition p =
     "; la relation Invar est un invariant de boucle\n"
-    ^"TODO" (* À compléter *) in
+
+    ^ str_assert_forall p.nvars ( "(=> (and " ^ 
+    str_condition (list_var p.nvars l)
+    ^ " " ^
+    str_of_test p.loopcond ^ ") " ^ str_condition p.mods ^ ")" )in
+
   let initial_condition p =
     "; la relation Invar est vraie initialement\n"
     ^str_assert (str_condition p.inits) in
   let assertion_condition p =
     "; l'assertion finale est vérifiée\n"
-    ^"TODO" (* À compléter *) in
+    ^ str_assert_forall p.nvars ("(=> (and " ^ 
+    str_condition (list_var p.nvars l)
+    ^ " " ^
+    str_of_test p.loopcond ^ ") " ^ str_of_test p.assertion ^ ")" )  in
   let call_solver =
     "; appel au solveur\n(check-sat-using (then qe smt))\n(get-model)\n(exit)\n" in
   String.concat "\n" [declare_invariant p.nvars;
@@ -123,4 +144,4 @@ let () = Printf.printf "%s" (smtlib_of_wa p1)
    un autre programme test, et vérifiez qu'il donne un fichier SMTLIB
    de la forme attendue. *)
 
-let p2 = None (* À compléter *)
+let p2 = None (* À compléter *) *)
