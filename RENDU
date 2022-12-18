@@ -5,7 +5,7 @@ Identité
 --------
 Nombre de binôme: 47
 Nom, prénom 1: Kadem, Hocine
-Nom, prénom 2: Dorbane Sara
+Nom, prénom 2: Dorbane, Sara
 
 
 Questions sur votre code
@@ -14,40 +14,101 @@ Questions sur votre code
 ** Exercice 2 **
 
 0. 
-`make invariants` s'exécute sans erreurs ou warnings : 
-->
+make invariants s'exécute sans erreurs ou warnings : 
+-> OUI
 
-`./invariants` produit une sortie au format SMT-LIB : 
--> ; synthèse d'invariant de programme
+
+./invariants produit une sortie au format SMT-LIB : 
+-> 
+   ; synthèse d'invariant de programme
    ; on déclare le symbole non interprété de relation Invar
    (declare-fun Invar (Int Int ) Bool)
    ; la relation Invar est un invariant de boucle
-   TODO
+   (assert (forall ((x1 Int) (x2 Int)) (=> (and (Invar x1 x2) (< x1 3)) (Invar (+ x1 1) (+ x2 3)))))
    ; la relation Invar est vraie initialement
-   (assert (Inv 0 0))
+   (assert (Invar 0 0))
    ; l'assertion finale est vérifiée
-   TODO
+   (assert (forall ((x1 Int) (x2 Int)) (=> (and (Invar x1 x2) (>= x1 3)) (= x2 9))))
    ; appel au solveur
    (check-sat-using (then qe smt))
    (get-model)
    (exit)
-
-
+   
 sortie est acceptée par Z3 : 
-->
+-> OUI
+Z3 renvoie le resultat suivant : 
+   sat
+   (
+   (define-fun Invar ((x!0 Int) (x!1 Int)) Bool
+      (or (and (<= 0 x!0)
+               (<= 1 x!0)
+               (<= 2 x!0)
+               (<= 3 x!0)
+               (not (= x!1 10))
+               (not (= x!1 7))
+               (not (= x!1 3))
+               (not (= x!1 (- 3)))
+               (not (= x!1 8))
+               (not (= x!1 11))
+               (not (= x!1 0))
+               (not (= x!1 (- 2)))
+               (not (= x!1 1))
+               (not (= x!1 2))
+               (not (= x!1 5))
+               (not (= x!1 6))
+               (not (= x!1 (- 1)))
+               (not (= x!1 4))
+               (= x!1 9))
+         (and (<= 0 x!0)
+               (<= 1 x!0)
+               (<= 2 x!0)
+               (not (<= 3 x!0))
+               (not (= x!1 10))
+               (not (= x!1 7))
+               (not (= x!1 3))
+               (not (= x!1 (- 3)))
+               (not (= x!1 8))
+               (not (= x!1 11))
+               (not (= x!1 0))
+               (not (= x!1 (- 2)))
+               (not (= x!1 1))
+               (not (= x!1 2))
+               (not (= x!1 5))
+               (= x!1 6))
+         (and (<= 0 x!0)
+               (<= 1 x!0)
+               (not (<= 2 x!0))
+               (not (= x!1 10))
+               (not (= x!1 7))
+               (= x!1 3))
+         (and (<= 0 x!0)
+               (not (<= 1 x!0))
+               (not (= x!1 10))
+               (not (= x!1 7))
+               (not (= x!1 3))
+               (not (= x!1 (- 3)))
+               (not (= x!1 8))
+               (not (= x!1 11))
+               (= x!1 0))))
+   ) 
+
 
 ---
 
 1. Le type `term` est un type récursif : 
 
    quel type de fonction est-il naturel d'utiliser ?
-   ->
+   ->Fonctions recursives
 
    Quels sont vos cas de base ?
-   ->
+   -> les cas de bases sont :
+   .t est une variable de type Var a, avec a un entier alors la fonction  retourne une variable xa
+   .t est une constante a
+   .t est une operation d'addition de type Add(a1,a2), la fonction renvoie le signe de l'addition "+" suivi des termes a1 a2
+   .t est une operation de multiplication de type Mult(a1,a2), la fonction renvoie le signe de la multiplication "*" suivi des termes a1 a2
 
    Quelle quantité strictement décroissante au cours des appels successifs vous assure la terminaison ?
-   ->
+   -> les quantités Var a et Const a assurent la terminaison de la recusrtion car ce sont des cas atomiques
 
 ---
 
@@ -115,4 +176,7 @@ sortie est acceptée par Z3 :
 
 **à remplir**
 
-
+.MODIF QST1
+.FAIRE QST4 ET QST5 
+.COMMENTER SMTLIB
+.CODER QST5 DANS INVARIANTS.ML
