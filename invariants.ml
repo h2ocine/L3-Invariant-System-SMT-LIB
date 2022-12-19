@@ -38,29 +38,47 @@ let str_of_test t =
   |Equals(term1, term2) -> "(= " ^ (str_of_term term1) ^ " " ^ (str_of_term term2) ^ ")"
   |LessThan(term1, term2) -> "(< " ^ (str_of_term term1) ^ " " ^ (str_of_term term2) ^ ")"
 
-
-(*string_repeat : string -> int -> string*)
-let string_repeat s n =
-  Array.fold_left (^) "" (Array.make n s) 
-
-
 (* Question 2 ----------------------------------------------------------------------------*)
 (*str_condition : term list -> string*)
+(*str_condition : term list -> string*)
+(*str confition doit retourner "(Invar string_term1 string_term2 ...)" *)
+(*donc on utilise la fonction List.fold (qu'on explique dans le RENDU) avec comme arguments : 
+    -une fonction qui concatène un espace avec un terme et un autre string (qui representera 
+    la reste du resultat de la fonction),
+    -la liste des terms, 
+    -puis le caractère null comme initilisation du string
+*)
 let str_condition l = 
-  "(Invar" ^ (List.fold_right (fun term rest ->"  " ^ str_of_term term ^ rest) l "") ^ ")"
+  "(Invar" 
+   ^ 
+  (List.fold_right (fun term rest -> "  " ^ str_of_term term ^ rest) l "") 
+   ^ 
+  ")"
 
   
 (* Question 3 ----------------------------------------------------------------------------*)
-(*str_condition : term list -> string*)
+(*str_assert : string -> string*)
+(*ajoute des parenthèse et le mot assert dans un string*)
 let str_assert s = "(assert " ^ s ^ ")"
 
 (*str_assert_forall : int -> string -> string*)
+(*
+  cette fonction renvoie un string sous la forme : assert (forall ((x1 Int) (x2 Int)) (< x1 x2))) 
+  on utilise la fonction str_assert pour les premier parenthèse et le mot assert.
+  on concatène les deuxieme, troisieme parenthèses, "forall", le string s donné en entré avec des parenthèse,
+  ainsi que le resultat de la fonction str_assert_forall_aux n 1 qu'on expliquera juste après.
+*)
 let str_assert_forall n s = 
   let rec str_assert_forall_aux n_init n= 
+  (*
+      n_init doit être initialiser a n (le nombre de term), n doit être initaliser a 1
+      a chaque occuration n augemente juqu'a arrivé a n_init 
+      cette fonction est plus détailé dans le RENDU
+  *) 
     if n > n_init
     then "" 
     else 
-      let espace = if n = n_init then "" else " " in
+      let espace = if n = n_init then "" else " " in (*le caractère espace ne doit être present lors de la derniere occurance (quand n = n_init)*)
       "(" ^ (str_of_term (Var(n))) ^ " Int)" ^ espace ^ (str_assert_forall_aux n_init (n+1))
 
   in str_assert ("(forall (" ^ str_assert_forall_aux n 1 ^ ") (" ^ s ^ "))")

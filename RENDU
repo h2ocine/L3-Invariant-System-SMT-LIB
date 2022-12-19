@@ -144,18 +144,17 @@ on remarque que APPR (INTER) ERR = {}  donc APPR est sure -> Sat
 2. Pour l'implémentation de `str_condition` : 
 
    Les fonctions auxiliaires nous avez utilisées et/ou écrites :
-   
-   * val str_of_term_with_space : term -> string -> string 
-      revoie une chaine de caractère qui concatène le caractère " " (espace) avec str_of_term de term, le tout concatèné avec la chaine de caractère reste
 
-      exemple : 
-      str_of_term_with_space Var(2) " suite de la formule" renvoie : " x2 suite de la formule"
+   * fun term rest -> "  " ^ str_of_term term ^ rest  : term -> string -> string 
+      on utilise cette fonction lors de l'appelle de List.fold 
+      elle permet de renvoyer une chaine de caractère qui concatène le caractère " " (espace) avec str_of_term de term, le tout concatèné avec la chaine de caractère reste qui representera les termes suivants
 
    * List.fold_right : ('a -> 'b -> 'b) -> 'a list -> 'b -> 'b
       fold_right f [a1; ...; an] init = f a1 (f a2 (... (f an init) ...))
 
    utilisation :
-   on l'appelle avec les arguments suivants : List.fold_right str_of_term_with_space l ""
+   on l'appelle comme suit : 
+   List.fold_right (fun term rest -> "  " ^ (str_of_term term ^ rest) l ""
    ceci permet de générer une chaine de caractère des termes que contient la liste l, tous séparés avec un espace (le caractère " ")
 
 ---
@@ -164,6 +163,12 @@ on remarque que APPR (INTER) ERR = {}  donc APPR est sure -> Sat
 
    Les fonctions auxiliaires nous avez utilisées et/ou écrites :
    
+   * str_assert : string -> string
+      renvoie la chaine "(assert " concatènée avec le string mis en paramètre avec le caractère ")" a la fin.
+
+      exemple : 
+      str_assert argument renvoie : "(assert argument)"
+
    * tr_assert_forall_aux : int -> int -> string
       tr_assert_forall_aux n k renvoie : "(xk Int) (xk+1 Int) .... (xn Int)"
 
