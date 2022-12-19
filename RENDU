@@ -33,6 +33,20 @@ make invariants s'exécute sans erreurs ou warnings :
    (check-sat-using (then qe smt))
    (get-model)
    (exit)
+
+EXPLICATION : la modelisation est la suivante: L def= ({+(2),(terme(0)) terme £ Z} ,{<(2),=(2),Invar})
+.Tout d'abord il faut définir le symbole Invar qui represente le sous ensemble des configurations
+accessibles avec declare-fun
+.Garantir que la surapproximation est un invariant inductif (invariant de boucle):
+   1. Garantir que la configuration initiale (0,0) est dans l'invariant -> (assert(Invar 0 0))
+   2. Garantir que c'est inductif , si on applique une operation du programme 
+   sur un point qui est dans l'invariant alors le point resultant reste dans l'invariant si
+   la condition de la boucle est vrai c'est ce que modelise la ligne suivante:
+   (assert (forall ((x1 Int) (x2 Int)) (=> (and (Invar x1 x2) (< x1 3)) (Invar (+ x1 1) (+ x2 3)))))
+.Garantir que l'assertion de fin est vérifiée, en sortant de la boucle (condition de boucle n'est plus 
+verifiée) pour toute configuration (x1,x2) inclus dans l'invariant, x2 doit verifier l'assertion x2=9, c'est ce que modelise
+la ligne :(assert (forall ((x1 Int) (x2 Int)) (=> (and (Invar x1 x2) (>= x1 3)) (= x2 9))))
+
    
 sortie est acceptée par Z3 : 
 -> OUI
@@ -48,7 +62,7 @@ Z3 renvoie le resultat suivant :
                (not (= x!1 7))
                (not (= x!1 3))
                (not (= x!1 (- 3)))
-               (not (= x!1 8))
+               (not (= x!1 8))Notre
                (not (= x!1 11))
                (not (= x!1 0))
                (not (= x!1 (- 2)))
@@ -92,6 +106,20 @@ Z3 renvoie le resultat suivant :
                (= x!1 0))))
    ) 
 
+Explication des resultats: 
+Le solveur renvoie une surapproximation de l'ensemble des configurations accessibles par
+le programme p1. 
+-> un disjonctions de 4 cas possible, chaque conjonction represente un cas
+-> le premier cas modelise tous les points dans l'approximation où x0 >= 3 et x1=9
+-> le deuxieme cas modelise le point x0=2 (x0 >= 2 et not(x0 >= 3) <-> x0=2) alors x1=6
+-> le troisieme cas modelise le point x0=1 (x0 >= 1 et not(x0 >= 2) <-> x0=1) alors x1=3
+-> le quatrième cas modelise le point x0=0 (x0 >= 0 et not(x0 >= 1) <-> x0=0) alors x1=0
+
+le solveur renvoie une approximation APPR qui contient les 3 points (0,0) (1,3) (2,6) 
+et un ensemble de points {(i,j) tq i>=3 et j=9} en évitant la zone d'erreur qui est
+l'ensemble ERR={(i,j) tq j!=9 et i>=3}
+APPR={{(0,0)} U {(1,3)} U {(2,6)} U {(i,j) tq i>=3 et j=9}}
+on remarque que APPR (INTER) ERR = {}  donc APPR est sure -> Sat
 
 ---
 
@@ -102,13 +130,14 @@ Z3 renvoie le resultat suivant :
 
    Quels sont vos cas de base ?
    -> les cas de bases sont :
-   .t est une variable de type Var a, avec a un entier alors la fonction  retourne une variable xa
-   .t est une constante a
+   .t est une variable de type Var a, avec a un entier, alors la fonction  retourne une variable "xa"
+   .t est une constante a la fonction retourne un string "a"
    .t est une operation d'addition de type Add(a1,a2), la fonction renvoie le signe de l'addition "+" suivi des termes a1 a2
    .t est une operation de multiplication de type Mult(a1,a2), la fonction renvoie le signe de la multiplication "*" suivi des termes a1 a2
 
    Quelle quantité strictement décroissante au cours des appels successifs vous assure la terminaison ?
-   -> les quantités Var a et Const a assurent la terminaison de la recusrtion car ce sont des cas atomiques
+   -> les quantités Var a et Const a assurent la terminaison de la recusrtion car ce sont des cas atomiques qui ne font pas 
+   appel à la récursion
 
 ---
 
@@ -169,13 +198,250 @@ Z3 renvoie le resultat suivant :
    code pour construite un programme SMT-LIB plus proche de la façon
    dont les variables sont mises à jour en Java.
 
-**à remplir**
 
 ---
 5. Avez-vous d'autres remarques sur votre rendu ? (question optionnelle)
 
-**à remplir**
+pour le deuxieme test nous avons ecrit le programme suivant 
+ programme p2 
+  int x=0;
+  int y=10;
+  int z=0;
+  while(x<10){
+    x=x+2; 
+    y=y+z;
+    z=z+1;
+  }
+  assert(y>15);
 
+Resultat format SMTLIB:
+; synthèse d'invariant de programme
+; on déclare le symbole non interprété de relation Invar
+(declare-fun Invar (Int Int Int ) Bool)
+; la relation Invar est un invariant de boucle
+(assert (forall ((x1 Int) (x2 Int) (x3 Int)) (=> (and (Invar x1 x2 x3) (< x1 10)) (Invar (+ x1 2) (+ x2 x3) (+ x3 1)))))
+; la relation Invar est vraie initialement
+(assert (Invar 0 10 0))
+; l'assertion finale est vérifiée
+(assert (forall ((x1 Int) (x2 Int) (x3 Int)) (=> (and (Invar x1 x2 x3) (>= x1 10)) (< 15 x2))))
+; appel au solveur
+(check-sat-using (then qe smt))
+(get-model)
+(exit)
+
+
+le solveur Z3 donne le resultat suivant :
+La surapproximation trouvé par Z3 est une disjonction de 5 conjonction (cas de configurations)
+1. x=2 et y=10 et z=1 (boucle)
+2. x=8 et y=16 et z=4 (boucle)
+3. x>=10 et y>=20 et z=5 (sortie de la boucle not(x<10) et y>=20 -> assert(y>15)=true)
+4. x=6 et y=13 et z=3 (boucle)
+5. x=0 et y=10 et z=0 (cas d'initialisation)
+6. x=4 et y=11 et z=2 (boucle)
+sat
+(
+  (define-fun Invar ((x!0 Int) (x!1 Int) (x!2 Int)) Bool
+    (or (and (<= 0 x!0)
+             (<= 1 x!0)
+             (<= 2 x!0)
+             (not (<= 3 x!0))
+             (<= 10 x!1)
+             (not (<= 11 x!1))
+             (not (= x!2 (- 13)))
+             (not (= x!2 (- 27)))
+             (not (= x!2 8))
+             (not (= x!2 7))
+             (not (= x!2 (- 11)))
+             (not (= x!2 (- 5)))
+             (not (= x!2 (- 1)))
+             (not (= x!2 2))
+             (not (= x!2 (- 16)))
+             (not (= x!2 0))
+             (not (= x!2 (- 21)))
+             (not (= x!2 6))
+             (not (= x!2 (- 18)))
+             (not (= x!2 (- 8)))
+             (not (= x!2 (- 12)))
+             (not (= x!2 (- 23)))
+             (not (= x!2 (- 2)))
+             (not (= x!2 (- 17)))
+             (not (= x!2 (- 7)))
+             (not (= x!2 (- 24)))
+             (not (= x!2 (- 25)))
+             (not (= x!2 (- 22)))
+             (not (= x!2 (- 14)))
+             (= x!2 1))
+        (and (<= 0 x!0)
+             (<= 1 x!0)
+             (<= 2 x!0)
+             (<= 3 x!0)
+             (<= 4 x!0)
+             (<= 5 x!0)
+             (<= 6 x!0)
+             (<= 7 x!0)
+             (<= 8 x!0)
+             (not (<= 9 x!0))
+             (<= 10 x!1)
+             (<= 11 x!1)
+             (<= 13 x!1)
+             (<= 15 x!1)
+             (<= 16 x!1)
+             (not (<= 20 x!1))
+             (not (= x!2 (- 13)))
+             (not (= x!2 (- 27)))
+             (not (= x!2 8))
+             (not (= x!2 7))
+             (not (= x!2 (- 11)))
+             (not (= x!2 (- 5)))
+             (not (= x!2 (- 1)))
+             (not (= x!2 2))
+             (not (= x!2 (- 16)))
+             (not (= x!2 0))
+             (not (= x!2 (- 21)))
+             (not (= x!2 6))
+             (not (= x!2 (- 18)))
+             (not (= x!2 (- 8)))
+             (not (= x!2 (- 12)))
+             (not (= x!2 (- 23)))
+             (not (= x!2 (- 2)))
+             (not (= x!2 (- 17)))
+             (not (= x!2 (- 7)))
+             (not (= x!2 (- 24)))
+             (not (= x!2 (- 25)))
+             (not (= x!2 (- 22)))
+             (not (= x!2 (- 14)))
+             (not (= x!2 1))
+             (not (= x!2 (- 6)))
+             (not (= x!2 (- 10)))
+             (not (= x!2 (- 19)))
+             (not (= x!2 (- 28)))
+             (not (= x!2 3))
+             (not (= x!2 (- 4)))
+             (not (= x!2 5))
+             (not (= x!2 (- 9)))
+             (not (= x!2 (- 3)))
+             (= x!2 4))
+        (and (<= 0 x!0)
+             (<= 1 x!0)
+             (<= 2 x!0)
+             (<= 3 x!0)
+             (<= 4 x!0)
+             (<= 5 x!0)
+             (<= 6 x!0)
+             (<= 7 x!0)
+             (<= 8 x!0)
+             (<= 9 x!0)
+             (<= 10 x!0)
+             (<= 10 x!1)
+             (<= 11 x!1)
+             (<= 13 x!1)
+             (<= 15 x!1)
+             (<= 16 x!1)
+             (<= 20 x!1)
+             (not (= x!2 (- 13)))
+             (not (= x!2 (- 27)))
+             (not (= x!2 8))
+             (not (= x!2 7))
+             (not (= x!2 (- 11)))
+             (not (= x!2 (- 5)))
+             (not (= x!2 (- 1)))
+             (not (= x!2 2))
+             (not (= x!2 (- 16)))
+             (not (= x!2 0))
+             (not (= x!2 (- 21)))
+             (not (= x!2 6))
+             (not (= x!2 (- 18)))
+             (not (= x!2 (- 8)))
+             (not (= x!2 (- 12)))
+             (not (= x!2 (- 23)))
+             (not (= x!2 (- 2)))
+             (not (= x!2 (- 17)))
+             (not (= x!2 (- 7)))
+             (not (= x!2 (- 24)))
+             (not (= x!2 (- 25)))
+             (not (= x!2 (- 22)))
+             (not (= x!2 (- 14)))
+             (not (= x!2 1))
+             (not (= x!2 (- 6)))
+             (not (= x!2 (- 10)))
+             (not (= x!2 (- 19)))
+             (not (= x!2 (- 28)))
+             (not (= x!2 3))
+             (not (= x!2 (- 4)))
+             (= x!2 5))
+        (and (<= 0 x!0)
+             (<= 1 x!0)
+             (<= 2 x!0)
+             (<= 3 x!0)
+             (<= 4 x!0)
+             (<= 5 x!0)
+             (<= 6 x!0)
+             (not (<= 7 x!0))
+             (<= 10 x!1)
+             (<= 11 x!1)
+             (<= 13 x!1)
+             (not (<= 15 x!1))
+             (not (= x!2 (- 13)))
+             (not (= x!2 (- 27)))
+             (not (= x!2 8))
+             (not (= x!2 7))
+             (not (= x!2 (- 11)))
+             (not (= x!2 (- 5)))
+             (not (= x!2 (- 1)))
+             (not (= x!2 2))
+             (not (= x!2 (- 16)))
+             (not (= x!2 0))
+             (not (= x!2 (- 21)))
+             (not (= x!2 6))
+             (not (= x!2 (- 18)))
+             (not (= x!2 (- 8)))
+             (not (= x!2 (- 12)))
+             (not (= x!2 (- 23)))
+             (not (= x!2 (- 2)))
+             (not (= x!2 (- 17)))
+             (not (= x!2 (- 7)))
+             (not (= x!2 (- 24)))
+             (not (= x!2 (- 25)))
+             (not (= x!2 (- 22)))
+             (not (= x!2 (- 14)))
+             (not (= x!2 1))
+             (not (= x!2 (- 6)))
+             (not (= x!2 (- 10)))
+             (not (= x!2 (- 19)))
+             (not (= x!2 (- 28)))
+             (= x!2 3))
+        (and (<= 0 x!0)
+             (not (<= 1 x!0))
+             (<= 10 x!1)
+             (not (<= 11 x!1))
+             (not (= x!2 (- 13)))
+             (not (= x!2 (- 27)))
+             (not (= x!2 8))
+             (not (= x!2 7))
+             (not (= x!2 (- 11)))
+             (not (= x!2 (- 5)))
+             (not (= x!2 (- 1)))
+             (not (= x!2 2))
+             (not (= x!2 (- 16)))
+             (= x!2 0))
+        (and (<= 0 x!0)
+             (<= 1 x!0)
+             (<= 2 x!0)
+             (<= 3 x!0)
+             (<= 4 x!0)
+             (not (<= 5 x!0))
+             (<= 10 x!1)
+             (<= 11 x!1)
+             (not (<= 13 x!1))
+             (not (= x!2 (- 13)))
+             (not (= x!2 (- 27)))
+             (not (= x!2 8))
+             (not (= x!2 7))
+             (not (= x!2 (- 11)))
+             (not (= x!2 (- 5)))
+             (not (= x!2 (- 1)))
+             (= x!2 2))))
+)
 .MODIF QST1
 .FAIRE QST4 ET QST5 
 .COMMENTER SMTLIB
