@@ -36,7 +36,7 @@ make invariants s'exécute sans erreurs ou warnings :
 
 EXPLICATION : la modelisation est la suivante: L def= ({+(2),(terme(0)) terme £ Z} ,{<(2),=(2),Invar})
 .Tout d'abord il faut définir le symbole Invar qui represente le sous ensemble des configurations
-accessibles, (declare-fun Invar (Int Int ) Bool)
+accessibles -> (declare-fun Invar (Int Int ) Bool)
 .Garantir que la surapproximation est un invariant inductif (invariant de boucle):
    1. Garantir que la configuration initiale (0,0) est dans l'invariant -> (assert(Invar 0 0))
    2. Garantir que c'est inductif , si on applique une operation du programme 
@@ -198,11 +198,17 @@ on remarque que APPR (INTER) ERR = {}  donc APPR est sure -> Sat
    code pour construite un programme SMT-LIB plus proche de la façon
    dont les variables sont mises à jour en Java.
 
+Pour approcher la resolution de java on met la premiere operation dans un assert, de ce fait pour verifier le changement
+d'abord avant de faire la deuxieme operation.
+
 
 ---
 5. Avez-vous d'autres remarques sur votre rendu ? (question optionnelle)
 
-pour le deuxieme test nous avons ecrit le programme suivant 
+5.1. Remarque: le langage WA fonctionne seulment quand il ya une seule condition de boucle, les cas de conjonction ou disjonction 
+de plusieurs condition dans la boucle ne sont pas pris en compte.
+
+5.2. Pour le deuxieme test nous avons ecrit le programme suivant 
  programme p2 
   int x=0;
   int y=10;
@@ -442,7 +448,4 @@ sat
              (not (= x!2 (- 1)))
              (= x!2 2))))
 )
-.MODIF QST1
-.FAIRE QST4 ET QST5 
-.COMMENTER SMTLIB
-.CODER QST5 DANS INVARIANTS.ML
+
