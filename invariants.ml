@@ -27,10 +27,10 @@ let x n = "x" ^ string_of_int n
 (*str_of_term : term -> string*)
 let rec str_of_term t =  
   match t with 
-  |Var a -> "x" ^ string_of_int a ^ ""
+  |Var a -> x a
   |Const a -> string_of_int a
-  |Add(a1,a2) -> "(+" ^ " " ^ str_of_term a1 ^ " " ^ str_of_term a2 ^ ")"
-  |Mult(a1,a2) -> "(*" ^ " " ^ str_of_term a1 ^ " " ^ str_of_term a2 ^ ")"
+  |Add(a1,a2) -> "(+ " ^ str_of_term a1 ^ " " ^ str_of_term a2 ^ ")"
+  |Mult(a1,a2) -> "(* " ^ str_of_term a1 ^ " " ^ str_of_term a2 ^ ")"
 
 (*str_of_term : term -> string*)
 let str_of_test t = 
