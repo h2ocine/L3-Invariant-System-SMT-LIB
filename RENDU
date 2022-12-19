@@ -111,9 +111,9 @@ Le solveur renvoie une surapproximation de l'ensemble des configurations accessi
 le programme p1. 
 -> un disjonctions de 4 cas possible, chaque conjonction represente un cas
 -> le premier cas modelise tous les points dans l'approximation où x0 >= 3 et x1=9
--> le deuxieme cas modelise le point x0=2 (x0 >= 2 et not(x0 >= 3) <-> x0=2) alors x1=6
--> le troisieme cas modelise le point x0=1 (x0 >= 1 et not(x0 >= 2) <-> x0=1) alors x1=3
--> le quatrième cas modelise le point x0=0 (x0 >= 0 et not(x0 >= 1) <-> x0=0) alors x1=0
+-> le deuxieme cas modelise le point x0=2 (x0 >= 2 et not(x0 >= 3) <-> x0=2) et x1=6
+-> le troisieme cas modelise le point x0=1 (x0 >= 1 et not(x0 >= 2) <-> x0=1) et x1=3
+-> le quatrième cas modelise le point x0=0 (x0 >= 0 et not(x0 >= 1) <-> x0=0) et x1=0
 
 le solveur renvoie une approximation APPR qui contient les 3 points (0,0) (1,3) (2,6) 
 et un ensemble de points {(i,j) tq i>=3 et j=9} en évitant la zone d'erreur qui est
