@@ -36,7 +36,7 @@ make invariants s'exécute sans erreurs ou warnings :
 
 EXPLICATION : la modelisation est la suivante: L def= ({+(2),(terme(0)) terme £ Z} ,{<(2),=(2),Invar})
 .Tout d'abord il faut définir le symbole Invar qui represente le sous ensemble des configurations
-accessibles avec declare-fun
+accessibles, (declare-fun Invar (Int Int ) Bool)
 .Garantir que la surapproximation est un invariant inductif (invariant de boucle):
    1. Garantir que la configuration initiale (0,0) est dans l'invariant -> (assert(Invar 0 0))
    2. Garantir que c'est inductif , si on applique une operation du programme 
