@@ -47,10 +47,7 @@ let string_repeat s n =
 (* Question 2 ----------------------------------------------------------------------------*)
 (*str_condition : term list -> string*)
 let str_condition l = 
-  let rec str_of_term_with_space term reste= 
-    " " ^ str_of_term term ^ reste
-  in
-  "(Invar" ^ (List.fold_right str_of_term_with_space l "") ^ ")"
+  "(Invar" ^ (List.fold_right (fun term rest ->"  " ^ str_of_term term ^ rest) l "") ^ ")"
 
   
 (* Question 3 ----------------------------------------------------------------------------*)
